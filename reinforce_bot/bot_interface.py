@@ -4,31 +4,27 @@ import numpy as np
 
 class ReinforceBot:
     
-    def __init__(self, player_num : int = 1, path=None):
+    EPSILON = 0.05
+    
+    def __init__(self, player_num : int, path: str):
         self.q_eval = None
         self.p_number = player_num
-        if path != None:
-            self.load_model(path)
-        else:
-            if player_num == 1:
-                self.load_model("reinforce_bot/model/agentP1.h5")
-            elif player_num == 2:
-                # raise NotImplementedError("Work In Progress")
-                self.load_model("reinforce_bot/model/agentP2.h5")
-            else:
-                raise TypeError("Not a valid player number")
+        self.load_model(path)
         
     def action(self, board) -> int:
-        board_copy = deepcopy(board)
-        board_copy.append(self.p_number)
-        valid_move = self._available_move(deepcopy(board_copy))
+        board_copy = board[:]
+        valid_move = self._available_move(board_copy)
         state = np.array(board_copy)
         state = state[np.newaxis, :]
-        actions = self.q_eval.predict(state)[0]
-        pred = np.argsort(actions, kind='heapsort')[::-1]
-        for i in pred:
-            if i in valid_move:
-                return i
+        rand = np.random.random()
+        action = np.random.choice(valid_move)
+        if rand >= self.EPSILON:
+            actions = self.q_eval.predict(state)[0]
+            pred = np.argsort(actions, kind='heapsort')[::-1]
+            for i in pred:
+                if i in valid_move:
+                    return i
+        return action
     
     def _available_move(self,board) -> np.array:
         fin = []

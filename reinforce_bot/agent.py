@@ -3,6 +3,7 @@
 from tensorflow.keras.layers import Dense, Activation, Dropout, Embedding, Flatten
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.optimizers import Adam
+import tensorflow as tf
 import numpy as np
 
 class ReplayBuffer(object):
@@ -46,26 +47,10 @@ class ReplayBuffer(object):
 
 
 ###############################################################################
-
-def build_dqn(lr, n_actions, input_dims):
-    model = Sequential()
-    model.add(Embedding(3, 3, input_shape=(input_dims,)))
-    model.add(Flatten())
-    model.add(Dense(256, activation="relu"))
-    model.add(Dropout(0.2))
-    model.add(Dense(128, activation="relu"))
-    model.add(Dropout(0.2))
-    model.add(Dense(64, activation="relu"))
-    model.add(Dense(n_actions, activation='linear'))
-
-    model.compile(optimizer=Adam(lr=lr), loss='mse')
-    
-    return model
-
 class DDQNAgent(object):
     def __init__(self, alpha, gamma, n_actions, epsilon, batch_size,
                  input_dims, epsilon_dec=0.9999,  epsilon_end=0.1,
-                 mem_size=1000000, fname='ddqn_model.h5', replace_target=100):
+                 mem_size=1000000, fname='ddqn_model.h5', replace_target=100, load_model=None):
         self.action_space = [i for i in range(n_actions)]
         self.n_actions = n_actions
         self.gamma = gamma
@@ -77,8 +62,26 @@ class DDQNAgent(object):
         self.replace_target = replace_target
         self.memory = ReplayBuffer(mem_size, input_dims, n_actions,
                                    discrete=True)
-        self.q_eval = build_dqn(alpha, n_actions, input_dims)
-        self.q_target = build_dqn(alpha, n_actions, input_dims)
+        self.q_eval = self.build_dqn(alpha, n_actions, input_dims)
+        self.q_target = self.build_dqn(alpha, n_actions, input_dims)
+        if load_model is not None:
+            self.q_eval = tf.keras.models.load_model(load_model)
+            self.q_target = tf.keras.models.load_model(load_model)
+            
+    def build_dqn(self, lr, n_actions, input_dims):
+        model = Sequential()
+        model.add(Embedding(3, 3, input_shape=(input_dims,)))
+        model.add(Flatten())
+        model.add(Dense(256, activation="relu"))
+        model.add(Dropout(0.2))
+        model.add(Dense(128, activation="relu"))
+        model.add(Dropout(0.2))
+        model.add(Dense(64, activation="relu"))
+        model.add(Dense(n_actions, activation='linear'))
+        
+        model.compile(optimizer=Adam(lr=lr), loss='mse')
+        
+        return model
 
     def remember(self, state, action, reward, new_state, done):
         self.memory.store_transition(state, action, reward, new_state, done)
@@ -88,7 +91,6 @@ class DDQNAgent(object):
         for i in range(len(arr)):
             if arr[i] == 0:
                 fin.append(i)
-        
         return np.array(fin)
 
     def choose_action(self, state):
@@ -133,6 +135,7 @@ class DDQNAgent(object):
                            self.epsilon_min else self.epsilon_min
             if self.memory.mem_cntr % self.replace_target == 0:
                 self.update_network_parameters()
+        return
 
     def update_network_parameters(self):
         self.q_target.set_weights(self.q_eval.get_weights())

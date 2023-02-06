@@ -1,10 +1,4 @@
-#! python
-
-from agent import build_dqn
-
-print("Hello")
-
-model = build_dqn(0.9, 9,  9)
-print(model.summary())
-pred = model.predict([[0 for i in range(9)]])
-print(pred)
+import numpy as np
+a = [1,2,3,4,5, 0]
+arr = np.array(a)
+print((arr == 0).any())

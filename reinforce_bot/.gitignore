@@ -1,3 +1,4 @@
 *.ipynb
 agent[0-9]*.h5
+agent-[0-9]*.h5
 *.pbz2

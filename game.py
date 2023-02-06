@@ -1,5 +1,6 @@
 import os
 from reinforce_bot.bot_interface import ReinforceBot
+import random
 
 def visualizeBoard(board):
     """
@@ -111,13 +112,19 @@ def gamePlayBot(bot_player: int):
     """
     Main Game Function with BOT
     """
+    bot_p1_agent_path = "reinforce_bot/model/agent1-3613.h5"
+    bot_p2_agent_path = "reinforce_bot/model/agent2-3613.h5"
     board = [0,0,0,0,0,0,0,0,0]
     winStatus = 0
     round = 0
-    botAgent = ReinforceBot(bot_player)
+    bot_agent_path = bot_p1_agent_path if bot_player == 1 else bot_p2_agent_path
+    botAgent = ReinforceBot(bot_player, bot_agent_path)
     while (round < 9) and (winStatus == 0):
         if (round % 2) == (bot_player - 1):
-            idx = botAgent.action(board)
+            if round == 0:
+                idx = random.randint(0, 8)
+            else:
+                idx = botAgent.action(board)
             board[idx] = bot_player
         else:
             board = nextTurn(board, round)
