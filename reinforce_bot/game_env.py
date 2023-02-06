@@ -65,9 +65,9 @@ class Game:
         
     def step(self, idx: int):
         done = False
-        # Not valid moves! Get minus rewards
+        # Not valid moves! Get minus -20 rewards
         if idx not in self.available_move():
-            return self.create_state(), -9, True
+            return self.create_state(), -20, True
         
         # Assigning simbols with an index
         if self.round % 2 == 0: # Player 1 input
@@ -88,7 +88,7 @@ class Game:
             
         return self.create_state(), reward, done
     
-    def visualizeBoard(self):
+    def latestBoardStr(self) -> str:
         """
         This function is used to print out the board state on console.
         // Box (Board) State
@@ -97,7 +97,6 @@ class Game:
         box = 2 -> X
         """
         board = self.board
-        print('=========== END BOARD ===========')
         translatedBoard = []
         for box in board:
             if box == 0:
@@ -108,9 +107,15 @@ class Game:
                 translatedBoard.append("X")
             else:
                 print("Something is wrong here.")
-
-        print(f"\t  {translatedBoard[0]} | {translatedBoard[1]} | {translatedBoard[2]} ")
-        print("\t ---+---+---")
-        print(f"\t  {translatedBoard[3]} | {translatedBoard[4]} | {translatedBoard[5]} ")
-        print("\t ---+---+---")
-        print(f"\t  {translatedBoard[6]} | {translatedBoard[7]} | {translatedBoard[8]} ")
+                
+        return f"""
+    =========== END BOARD ===========
+    \t  {translatedBoard[0]} | {translatedBoard[1]} | {translatedBoard[2]} 
+    \t ---+---+---
+    \t  {translatedBoard[3]} | {translatedBoard[4]} | {translatedBoard[5]} 
+    \t ---+---+---
+    \t  {translatedBoard[6]} | {translatedBoard[7]} | {translatedBoard[8]} 
+    """
+    
+    def visualizeBoard(self) -> str:
+        print(self.latestBoardStr())

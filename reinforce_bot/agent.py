@@ -1,6 +1,6 @@
 # ref: https://www.youtube.com/watch?v=5fHngyN8Qhw
 
-from tensorflow.keras.layers import Dense, Activation, Dropout
+from tensorflow.keras.layers import Dense, Activation, Dropout, Embedding, Flatten
 from tensorflow.keras.models import Sequential, load_model
 from tensorflow.keras.optimizers import Adam
 import numpy as np
@@ -49,13 +49,17 @@ class ReplayBuffer(object):
 
 def build_dqn(lr, n_actions, input_dims):
     model = Sequential()
-    model.add(Dense(128, activation="linear", input_shape=(input_dims,)))
+    model.add(Embedding(3, 3, input_shape=(input_dims,)))
+    model.add(Flatten())
+    model.add(Dense(256, activation="relu"))
     model.add(Dropout(0.2))
-    model.add(Dense(128, activation="softmax"))
-    model.add(Dense(n_actions))
+    model.add(Dense(128, activation="relu"))
+    model.add(Dropout(0.2))
+    model.add(Dense(64, activation="relu"))
+    model.add(Dense(n_actions, activation='linear'))
 
     model.compile(optimizer=Adam(lr=lr), loss='mse')
-
+    
     return model
 
 class DDQNAgent(object):
